@@ -1,115 +1,110 @@
-import Image from "next/image";
-import { Geist, Geist_Mono } from "next/font/google";
+import React, { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
+import Sidebar from "../components/Sidebar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const Map = dynamic(() => import("../components/Map"), { ssr: false });
 
 export default function Home() {
+  const [pins, setPins] = useState([]);
+  const [selectedPinId, setSelectedPinId] = useState(null);
+
+  // Fetch pins from backend API 
+  useEffect(() => {
+    const fetchPins = async () => {
+      try {
+        const response = await fetch("/api/pins");
+        if (!response.ok) {
+          throw new Error("Failed to fetch pins");
+        }
+        const data = await response.json();
+        console.log("Fetched pins:", data);
+        setPins(data);
+        // Also save to localStorage
+        localStorage.setItem("pins", JSON.stringify(data));
+      } catch (error) {
+        console.error("Error fetching pins:", error);
+        // Fallback to localStorage if API fails
+        const storedPins = JSON.parse(localStorage.getItem("pins") || "[]");
+        setPins(storedPins);
+      }
+    };
+    fetchPins();
+  }, []);
+
+  // Save pins to localStorage whenever pins change
+  useEffect(() => {
+    console.log("Pins updated:", pins);
+    localStorage.setItem("pins", JSON.stringify(pins));
+  }, [pins]);
+
+  const handleAddPin = (pin) => {
+    console.log("Adding pin:", pin);
+    setPins((prevPins) => [...prevPins, pin]);
+    setSelectedPinId(pin._id || pin.id);
+  };
+
+  const handleSelectPin = (pinId) => {
+    console.log("Selecting pin:", pinId);
+    setSelectedPinId(pinId);
+  };
+
+
+  const handleDeletePin = async (pinId) => {
+    console.log("Deleting pin with id:", pinId);
+    try {
+      const response = await fetch(`/api/pins/${pinId}`, {
+        method: "DELETE",
+      });
+      console.log("Delete response status:", response.status);
+      if (!response.ok) {
+        throw new Error("Failed to delete pin");
+      }
+      // Remove pin from state
+      setPins((prevPins) =>
+        prevPins.filter((pin) => (pin._id || pin.id) !== pinId)
+      );
+      
+      const storedPins = JSON.parse(localStorage.getItem("pins") || "[]");
+      const updatedPins = storedPins.filter(
+        (pin) => (pin._id || pin.id) !== pinId
+      );
+      localStorage.setItem("pins", JSON.stringify(updatedPins));
+      
+      if (selectedPinId === pinId) {
+        setSelectedPinId(null);
+      }
+    } catch (error) {
+      console.error("Error deleting pin:", error);
+    }
+  };
+
   return (
-    <div
-      className={`${geistSans.className} ${geistMono.className} font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20`}
-    >
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+    <div className="sm:flex-row-3 h-[100vh] bg-gradient-to-r from-[#1a202c] to-[#2d3748]">
+      <header className="text-[24px] ml-[280px] text-shadow-transparent flex items-center justify-center mb-[48px] max-md:ml-0 max-md:px-4">
+        <img
+          src="./loc.png"
+          className="h-[65px] w-[62px] hover:rotate-12 mr-[6px]"
         />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/pages/index.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        <p className="flex justify-center items-center font-bold py-[24px] mt-[20px] text-[35px] text-[#dce2e9]">
+          PinPoint Mapper
+        </p>
+      </header>
+      <div className="max-w-full flex sm:flex-row justify-between items-center md:flex-row h-[500px]">
+        <Sidebar
+          pins={pins}
+          onSelectPin={handleSelectPin}
+          onDeletePin={handleDeletePin}
+          className="w-full md:w-[350px]"
+        />
+        <div className="rounded-lg max-md:w-full w-[1005px] h-[500px] max-md:mt-4 mr-[90px]">
+          <Map
+            pins={pins}
+            onAddPin={handleAddPin}
+            onSelectPin={handleSelectPin}
+            selectedPinId={selectedPinId}
+          />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
   );
 }

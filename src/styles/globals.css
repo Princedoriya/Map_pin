@@ -1,26 +1,111 @@
-@import "tailwindcss";
+@import "tailwindcss/preflight";
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Custom global styles */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Georgia', serif;
+  background-color: #243949;
+  color: #333;
+  margin: 0;
+  padding: 0;
+
+    
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Times New Roman', Times, serif;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+
+
+button {
+  font-family: 'Georgia', serif;
+  background: linear-gradient(45deg, #6a11cb, #2575fc);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  box-shadow: 0 2px 6px rgba(101, 41, 255, 0.5);
+}
+
+button:hover {
+  background: linear-gradient(45deg, #2575fc, #6a11cb);
+  box-shadow: 0 4px 12px rgba(101, 41, 255, 0.7);
+}
+
+input[type="text"] {
+  font-family: 'Georgia', serif;
+  border: 1px solid #ccc;
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  margin-top: 0.3rem;
+  margin-bottom: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus {
+  border-color: #6a11cb;
+  outline: none;
+  box-shadow: 0 0 5px rgba(106, 17, 203, 0.7);
+}
+/* Add these styles to your existing sidebar section */
+
+.sidebar {
+  background: #34495e;
+  padding: 1.5rem;
+  width: 312px;
+  height: 100vh;
+  overflow-y: auto;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+  border-radius: 0 8px 8px 0;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+.sidebar::-webkit-scrollbar {
+  display: none; 
+}
+
+.sidebar h2 {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #34495e;
+  font-size: 1.55rem;
+  margin-bottom: 1.25rem;
+  color: #f8f9fa;
+  padding: 0.5rem 0;
+}
+
+.sidebar ul {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+}
+
+.sidebar li {
+  margin-bottom: 1rem;
+  cursor: pointer;
+  color: #f8f9fa;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  padding: 0.6rem;
+  border-radius: 6px;
+}
+
+.sidebar li:hover {
+  background-color: #d6e0f0;
+  color: #2c3e50;
+}
+
+.map-container {
+  background: teal;
+  height: 100vh;
+  width: 100%;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+  border-radius: 0 16px 16px 0;
+  overflow: hidden;
 }
